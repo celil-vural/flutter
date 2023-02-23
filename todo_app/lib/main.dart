@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
           elevation: 1,
           backgroundColor: Colors.white,
           iconTheme: IconThemeData(
-            color: Colors.black,
+            color: Colors.blue,
           ),
         ),
       ),
