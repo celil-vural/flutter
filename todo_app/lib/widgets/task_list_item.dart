@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:todo_app/core/locator.dart';
+import 'package:todo_app/data/local_storage.dart';
 import 'package:todo_app/models/task_model.dart';
 
 class TaskItem extends StatefulWidget {
@@ -11,16 +13,18 @@ class TaskItem extends StatefulWidget {
 
 class _TaskItemState extends State<TaskItem> {
   final TextEditingController _taskNameController = TextEditingController();
+  late final LocalStorage _localStorage;
   @override
   void initState() {
     super.initState();
-    _taskNameController.text = widget.task.title;
+    _localStorage = locator<LocalStorage>();
   }
 
   @override
   Widget build(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
+    _taskNameController.text = widget.task.title;
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: width * 0.05,
@@ -41,6 +45,7 @@ class _TaskItemState extends State<TaskItem> {
           onTap: () {
             setState(() {
               widget.task.isComplate = !widget.task.isComplate;
+              _localStorage.updateTask(task: widget.task);
             });
           },
           child: Container(
@@ -64,18 +69,18 @@ class _TaskItemState extends State<TaskItem> {
                 ),
               )
             : TextField(
-              textInputAction:TextInputAction.done,
+                textInputAction: TextInputAction.done,
                 minLines: 1,
                 maxLines: null,
                 controller: _taskNameController,
                 decoration: const InputDecoration(
                   border: InputBorder.none,
                 ),
-                onSubmitted: (value) {
+                onSubmitted: (value) async {
                   if (value.length > 3) {
-                    setState(() {
-                      widget.task.title = value;
-                    });
+                    widget.task.title = value;
+                    await _localStorage.updateTask(task: widget.task);
+                    setState(() {});
                   }
                 },
               ),

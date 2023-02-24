@@ -1,6 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:todo_app/core/locator.dart';
+import 'package:todo_app/data/local_storage.dart';
+import 'package:todo_app/helper/translations_helper.dart';
 import 'package:todo_app/models/task_model.dart';
+import 'package:todo_app/widgets/custom_search_delegate.dart';
 import 'package:todo_app/widgets/dismissible_bg.dart';
 import 'package:todo_app/widgets/task_list_item.dart';
 
@@ -12,68 +17,68 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late List<Task> _allTasks;
-
+  late LocalStorage _localStorage;
   @override
   void initState() {
     super.initState();
+    _localStorage = locator<LocalStorage>();
     _allTasks = <Task>[];
-    _allTasks.add(Task.create(title: 'title', createdAt: DateTime.now()));
+    _getAllTaskFromDb();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: getAppBar(context),
+      appBar: getAppBar(),
       body: _allTasks.isNotEmpty
           ? ListView.builder(
               itemCount: _allTasks.length,
               itemBuilder: (context, index) {
-                var _item = _allTasks[index];
+                var item = _allTasks[index];
                 return Dismissible(
-                  key: Key(_item.id),
-                  background:const DismissibleBg(),
-                  onDismissed: (direction) {
-                    setState(() {
+                    key: Key(item.id),
+                    background: const DismissibleBg(),
+                    onDismissed: (direction) async {
                       _allTasks.removeAt(index);
-                    });
-                  },
-                  child: TaskItem(task: _item)
-                );
+                      await _localStorage.deleteTask(task: item);
+                      setState(() {});
+                    },
+                    child: TaskItem(task: item));
               },
             )
-          : const Center(
-              child: Text('Görev ekle'),
+          : Center(
+              child:const Text('empty_task_list').tr(),
             ),
     );
   }
 
-  AppBar getAppBar(BuildContext context) {
+  AppBar getAppBar() {
     return AppBar(
       title: GestureDetector(
-        onTap: () => _showAddTaskBottomSheet(context),
+        onTap:_showAddTaskBottomSheet,
         child: const Text(
-          'Bugün neler yapacaksın?',
+          'title',
           style: TextStyle(
             color: Colors.black,
           ),
-        ),
+        ).tr(),
       ),
       centerTitle: false,
       actions: [
         IconButton(
           icon: const Icon(Icons.search),
-          onPressed: () {},
+          onPressed:_showSearchPage,
         ),
         IconButton(
-          onPressed: () => _showAddTaskBottomSheet(context),
+          onPressed:_showAddTaskBottomSheet,
           icon: const Icon(Icons.add),
         ),
       ],
     );
   }
 
-  void _showAddTaskBottomSheet(BuildContext context) {
+  _showAddTaskBottomSheet() {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -85,17 +90,31 @@ class _HomePageState extends State<HomePage> {
             title: TextField(
               autofocus: true,
               style: const TextStyle(fontSize: 20),
-              decoration: const InputDecoration(
-                  hintText: 'Yeni görev ekle', border: InputBorder.none),
+              decoration: InputDecoration(
+                  hintText: 'add_task'.tr(), border: InputBorder.none),
               onSubmitted: (value) {
                 Navigator.of(context).pop();
                 if (value.length > 3) {
                   DatePicker.showTimePicker(
                     context,
                     showSecondsColumn: false,
-                    onConfirm: (time) {
+                    locale: TranslationsHelper.getDevixeLanguage(context),
+                    currentTime: DateTime.now(),
+                    onConfirm: (time) async {
                       var newTask = Task.create(title: value, createdAt: time);
-                      _allTasks.add(newTask);
+                      int index = 0;
+                      if (_allTasks.isNotEmpty) {
+                        for (var element in _allTasks) {
+                          if (element.createdAt.isAfter(time)) {
+                            break;
+                          }
+                          index++;
+                        }
+                        _allTasks.insert(index, newTask);
+                      } else {
+                        _allTasks.add(newTask);
+                      }
+                      await _localStorage.addTask(task: newTask);
                       setState(() {});
                     },
                   );
@@ -106,5 +125,15 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  void _getAllTaskFromDb() async {
+    _allTasks = await _localStorage.getAllTask();
+    setState(() {});
+  }
+  
+  _showSearchPage() async{
+    await showSearch(context: context, delegate: CustomSearchDelegate(allTasks: _allTasks));
+    _getAllTaskFromDb();
   }
 }
