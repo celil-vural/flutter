@@ -36,4 +36,27 @@ class Note extends HiveObject {
       noteDegree,
     );
   }
+  @override
+  String toString() {
+    return '{noteId: $noteId, kategoriId: $kategoriId, noteTitle: $noteTitle, noteContent: $noteContent, noteDate: $noteDate, noteDegree: $noteDegree}';
+  }
+}
+@HiveType(typeId: 2)
+class Kategori extends HiveObject{
+  @HiveField(0)
+  final String kategoriId;
+  @HiveField(1)
+  final String kategoriAdi;
+
+  Kategori({required this.kategoriId,required this.kategoriAdi});
+  factory Kategori.create({required String kategoriAdi}){
+    return Kategori(
+      kategoriId: const Uuid().v1(),
+      kategoriAdi: kategoriAdi,
+    );
+  }
+  @override
+  String toString() {
+    return '{kategoriId: $kategoriId, kategoriAdi: $kategoriAdi}';
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:not_sepeti/models/kategori_model.dart';
 import 'package:not_sepeti/models/note_model.dart';
 
 abstract class LocalStorage{

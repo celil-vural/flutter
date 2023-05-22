@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:not_sepeti/core/locator.dart';
 import 'package:not_sepeti/core/setup_hive.dart';
+import 'package:not_sepeti/data/local_storage.dart';
+import 'package:not_sepeti/models/note_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,22 +21,30 @@ void main() async {
       supportedLocales: const [Locale('en', 'US'), Locale('tr', 'TR')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
-      child: const MyApp(),
+      child: MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  MyApp({super.key});
+  final LocalStorage db = locator<LocalStorage>();
   @override
   Widget build(BuildContext context) {
+    getKategori();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: Center(),
+      home: const Center(),
     );
+  }
+
+  Future<List<Kategori>> getKategori() async {
+    List<Kategori> kategori = await db.getAllKategori();
+    debugPrint("***************************************");
+    debugPrint(kategori.toString());
+    return kategori;
   }
 }

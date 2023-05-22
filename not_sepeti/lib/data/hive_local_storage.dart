@@ -1,6 +1,5 @@
 import 'package:hive/hive.dart';
 import 'package:not_sepeti/data/local_storage.dart';
-import 'package:not_sepeti/models/kategori_model.dart';
 import 'package:not_sepeti/models/note_model.dart';
 
 class HiveLocalStorage extends LocalStorage {

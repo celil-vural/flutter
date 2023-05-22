@@ -4,8 +4,8 @@ import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 class TranslationsHelper{
   TranslationsHelper._();
   static getDevixeLanguage(BuildContext context){
-    var _deviceLanguage=context.deviceLocale.countryCode!.toLowerCase();
-    switch(_deviceLanguage){
+    var deviceLanguage=context.deviceLocale.countryCode!.toLowerCase();
+    switch(deviceLanguage){
       case 'tr':
         return LocaleType.tr;
       default:
